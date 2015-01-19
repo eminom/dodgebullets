@@ -8,11 +8,16 @@
 
 import SpriteKit
 
-
-class SKObjNode:SKLabelNode{
+class SKObjNode :SKLabelNode{
     var _no:Int = 0
 }
-typealias BulletSet = Dictionary<Int, SKObjNode>
+
+class CircleBullet:SKShapeNode{
+    var _no:Int = 0
+}
+
+typealias BulletNode = CircleBullet
+typealias BulletSet = Dictionary<Int, BulletNode>
 
 class GameScene: SKScene {
     
@@ -90,7 +95,7 @@ class GameScene: SKScene {
         createShip()
         
         //_bullets = [SKSpriteNode]()
-        _bullets = Dictionary<Int, SKObjNode>()
+        _bullets = Dictionary<Int, BulletNode>()
         _health = 0
         
         let label = SKLabelNode(text:"PLAYER STATUS")
@@ -108,6 +113,24 @@ class GameScene: SKScene {
     private func getRandomVert()->CGFloat{
         return CGFloat(arc4random() % 1024)/1024.0 * self.frame.height
     }
+    
+    
+    private class func createBulletNode(x:CGFloat, _ y:CGFloat, _ x1:CGFloat, _ y1:CGFloat)->BulletNode{
+        let bullet0 = CircleBullet(circleOfRadius:24)  // Call SKShapdeNode:circleOfRadius
+        bullet0.position = CGPoint(x:x, y:y)
+        bullet0.fillColor = SKColor.redColor()         // So it is not hollow.
+        let action = SKAction.moveTo(CGPoint(x:x1, y:y1), duration:3.5)
+        bullet0.runAction(action)
+        return bullet0
+    }
+
+    /* // Good to know
+    private class func createBulletNode()->BulletNode{
+        //let bullet = SKObjNode(text:"X")
+        //bullet.addChild(bullet0)
+        //bullet.fontColor = SKColor.redColor()
+        //bullet.position = CGPoint(x:x0, y:y0) // Ok, you do it this way
+    }*/
     
     // Burst something into the air
     private func createBullet(){
@@ -153,12 +176,8 @@ class GameScene: SKScene {
             y1 = self.frame.height
         }
         
-        let bullet = SKObjNode(text:"A")
-        bullet.fontColor = SKColor.redColor()
-        bullet.position = CGPoint(x:x0, y:y0) // Ok, you do it this way
-        
-        let action = SKAction.moveTo(CGPoint(x:x1, y:y1), duration:1.0)
-        bullet.runAction(action)
+        //
+        let bullet = GameScene.createBulletNode(x0, y0, x1, y1)
         addChild(bullet)
         
         // Build with sequence no.
@@ -205,7 +224,7 @@ class GameScene: SKScene {
     private func checkBullets(){
         var removes:[Int]?
         for (each, v) in _bullets! {
-            let bullet = v as SKObjNode
+            let bullet = v as BulletNode
             if _ship!.containsPoint(bullet.position) {
                 if nil == removes {
                     removes = [Int]()
@@ -216,7 +235,7 @@ class GameScene: SKScene {
         }
         
         for (each, v) in _bullets!{
-            let bullet = v as SKObjNode
+            let bullet = v as BulletNode
             let pos = bullet.position
             
             if isOutOfRange(pos:pos) {
