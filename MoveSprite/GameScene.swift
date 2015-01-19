@@ -15,13 +15,14 @@ class SKObjNode:SKLabelNode{
 typealias BulletSet = Dictionary<Int, SKObjNode>
 
 class GameScene: SKScene {
-    //The default accessor is internal
-    //The three access qualifier are not counterparts with C++'s public/protected/private
+    
     internal override func didMoveToView(v: SKView) {
+        //The default accessor is internal
+        //The three access qualifier are not counterparts with C++'s public/protected/private
         initMyScene()
     }
     
-    private func goWithLocation(org:CGPoint, loc:CGPoint)->CGPoint{
+    private func goWithLocation(org:CGPoint, _ loc:CGPoint)->CGPoint{
         var x, y:CGFloat
         if org.x > loc.x{
             x = -1
@@ -47,8 +48,8 @@ class GameScene: SKScene {
     override func touchesMoved(touches:NSSet, withEvent event:UIEvent){
         let oneTouch:UITouch = touches.anyObject() as UITouch   // and unwrapped as well
         let loc:CGPoint = oneTouch.locationInNode(self)
-        let org:CGPoint? = _ship?.position      // To specify the implication type
-        _shiftingSpeed = goWithLocation(org!, loc:loc)
+        let org:CGPoint = (_ship?.position)!      // To specify the implication type
+        _shiftingSpeed = goWithLocation(org, loc)
     }
     
     override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
@@ -59,7 +60,7 @@ class GameScene: SKScene {
         let oneTouch:UITouch = touches.anyObject() as UITouch   // and unwrapped as well
         let loc:CGPoint = oneTouch.locationInNode(self)
         let org:CGPoint? = _ship?.position      // To specify the implication type
-        _shiftingSpeed = goWithLocation(org!, loc:loc)
+        _shiftingSpeed = goWithLocation(org!, loc)
 
         /*
         for touch: AnyObject in touches {
@@ -105,7 +106,7 @@ class GameScene: SKScene {
     }
     
     private func getRandomVert()->CGFloat{
-        return CGFloat(arc4random()%1024)/1024.0 * self.frame.height
+        return CGFloat(arc4random() % 1024)/1024.0 * self.frame.height
     }
     
     // Burst something into the air
@@ -113,7 +114,7 @@ class GameScene: SKScene {
         let width = self.frame.width
         let height = self.frame.height
         let margin:CGFloat = 20.0
-        var x0, x1, y0, y1:CGFloat?
+        var x0, x1, y0, y1:CGFloat   //These four are not optional. And compiler will ensure their initilization is done.
         let side = arc4random() % 4
         switch side {
         case 0:
@@ -154,9 +155,9 @@ class GameScene: SKScene {
         
         let bullet = SKObjNode(text:"A")
         bullet.fontColor = SKColor.redColor()
-        bullet.position = CGPoint(x:x0!, y:y0!) // Ok, you do it this way
+        bullet.position = CGPoint(x:x0, y:y0) // Ok, you do it this way
         
-        let action = SKAction.moveTo(CGPoint(x:x1!, y:y1!), duration:1.0)
+        let action = SKAction.moveTo(CGPoint(x:x1, y:y1), duration:1.0)
         bullet.runAction(action)
         addChild(bullet)
         
@@ -188,11 +189,11 @@ class GameScene: SKScene {
     }
     
     private func updateStatusBar() {
-        _healthBar?.text = "HP :\(_health!)"
+        _healthBar?.text = "HP :\(_health)"
         _healthBar!.fontColor = SKColor.purpleColor()
     }
     
-    private func isOutOfRange(pos:CGPoint)->Bool{
+    private func isOutOfRange(#pos:CGPoint)->Bool{
         let margin:CGFloat = 10.0
         return pos.x < 0 - margin
             ||
@@ -210,7 +211,7 @@ class GameScene: SKScene {
                     removes = [Int]()
                 }
                 removes?.append(bullet._no)
-                _health! -= 1
+                _health -= 1
             }
         }
         
@@ -218,7 +219,7 @@ class GameScene: SKScene {
             let bullet = v as SKObjNode
             let pos = bullet.position
             
-            if isOutOfRange(pos) {
+            if isOutOfRange(pos:pos) {
                 if nil == removes{
                     removes = [Int]()
                 }
@@ -238,7 +239,7 @@ class GameScene: SKScene {
         /* Called before each frame is rendered */
         
         updateStatusBar()
-        let now:NSDate = NSDate()   // Not an optional. I wonder, do we have to alloc one each time we query ?
+        let now = NSDate()   // Not an optional. I wonder, do we have to alloc one each time we query ?
         if _prev!.timeIntervalSince1970 + _timeInt < now.timeIntervalSince1970 {
             _prev = now
             createBullet()
@@ -250,12 +251,13 @@ class GameScene: SKScene {
         println("bullet count to \(_bullets?.count)")
     }
     
+    private var _health:Int = 0
+    private var _seq:Int = 0
+    private let _timeInt = 0.3
+    
     private var _ship:SKSpriteNode?
-    private var _health:Int?
     private var _healthBar:SKLabelNode?
     private var _bullets:BulletSet?
     private var _shiftingSpeed:CGPoint = CGPoint(x:0, y:0)
     private var _prev:NSDate?
-    private var _seq:Int = 0
-    private let _timeInt = 0.3
 }
