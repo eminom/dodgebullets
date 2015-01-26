@@ -115,12 +115,20 @@ class GameScene: SKScene {
     }
     
     
-    private class func createBulletNode(x:CGFloat, _ y:CGFloat, _ x1:CGFloat, _ y1:CGFloat)->BulletNode{
+    //no class
+    private func createBulletNode(x:CGFloat, _ y:CGFloat, _ x1:CGFloat, _ y1:CGFloat)->BulletNode{
         let bullet0 = CircleBullet(circleOfRadius:24)  // Call SKShapdeNode:circleOfRadius
         bullet0.position = CGPoint(x:x, y:y)
         bullet0.fillColor = SKColor.redColor()         // So it is not hollow.
-        let action = SKAction.moveTo(CGPoint(x:x1, y:y1), duration:3.5)
-        bullet0.runAction(action)
+        bullet0.runAction(SKAction.sequence([
+            SKAction.moveTo(CGPoint(x:x1, y:y1), duration:0.3)
+            ,SKAction.runBlock{
+                bullet0.removeFromParent()
+                //println("Some what is removed")
+                self._bullets?.removeValueForKey(bullet0._no)
+            }
+            ])
+        )
         return bullet0
     }
 
@@ -136,7 +144,7 @@ class GameScene: SKScene {
     private func createBullet(){
         let width = self.frame.width
         let height = self.frame.height
-        let margin:CGFloat = 20.0
+        let margin:CGFloat = 0
         var x0, x1, y0, y1:CGFloat   //These four are not optional. And compiler will ensure their initilization is done.
         let side = arc4random() % 4
         switch side {
@@ -176,8 +184,9 @@ class GameScene: SKScene {
             y1 = self.frame.height
         }
         
-        //
-        let bullet = GameScene.createBulletNode(x0, y0, x1, y1)
+        // Not GameScene.createBulletNode
+        // Now it is a obj method.
+        let bullet = createBulletNode(x0, y0, x1, y1)
         addChild(bullet)
         
         // Build with sequence no.
@@ -234,6 +243,8 @@ class GameScene: SKScene {
             }
         }
         
+        /*
+        //Check the bullets run out of screen
         for (each, v) in _bullets!{
             let bullet = v as BulletNode
             let pos = bullet.position
@@ -245,6 +256,7 @@ class GameScene: SKScene {
                 removes?.append(bullet._no)
             }
         }
+        */
         
         if let rms = removes? {
             for no in rms {
@@ -266,7 +278,6 @@ class GameScene: SKScene {
         
         checkBullets()
         _ship?.position = CGPoint(x:_ship!.position.x + _shiftingSpeed.x, y: _ship!.position.y + _shiftingSpeed.y)
-        
         println("bullet count to \(_bullets?.count)")
     }
     
